@@ -1,7 +1,8 @@
+from loguru import logger
 from src.app.models.model import model
 from src.app.agent.schema import AgentState
 from src.app.prompt.template import PREVENTION_SYSTEM_PROMPT
-from langchain_core.messages import SystemMessage, HumanMessage  
+from langchain_core.messages import SystemMessage, HumanMessage
 
 _GENDER      = {0: "Female", 1: "Male"}
 _YES_NO      = {0: "No", 1: "Yes"}
@@ -50,12 +51,14 @@ def prevention_node(state: AgentState) -> AgentState:
     """
     features = state["customer_features"]
     probability = state.get("churn_probability") or 0.0
+    logger.info("[prevention_node] START — membuat rekomendasi pencegahan churn (probability: {:.2%})", probability)
 
-    # ── Bangun HumanMessage dari profil customer ──────────────────────────────
     customer_description = _decode_features(features)
     human_content = (
-        f"Customer Profile (Churn Probability: {probability:.1%}):\n"
+        f"Profil Customer:\n"
         f"{customer_description}\n\n"
+        f"Hasil Prediksi: CHURN RISK = TRUE\n"
+        f"Churn Probability: {probability:.1%}\n\n"
         "Analisis profil customer di atas dan berikan strategi pencegahan churn yang spesifik dan dapat dieksekusi."
     )
 
@@ -64,11 +67,13 @@ def prevention_node(state: AgentState) -> AgentState:
         HumanMessage(content=human_content),
     ]
 
-    # ── Invoke LLM ────────────────────────────────────────────────────────────
+    logger.debug("[prevention_node] memanggil LLM...")
     try:
         response = model.invoke(messages)
         recommendation = response.content
+        logger.success("[prevention_node] OK — rekomendasi berhasil dibuat ({} chars)", len(recommendation))
     except Exception as e:
+        logger.error("[prevention_node] FAILED — LLM error: {}", e)
         recommendation = f"Failed to generate recommendation: {str(e)}"
 
     return {
