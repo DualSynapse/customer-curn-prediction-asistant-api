@@ -1,6 +1,7 @@
 from loguru import logger
 from src.app.models.model import model
 from src.app.agent.schema import AgentState
+from src.config.tracing import get_tracer
 from src.app.prompt.template import PREVENTION_SYSTEM_PROMPT
 from langchain_core.messages import SystemMessage, HumanMessage
 
@@ -67,9 +68,12 @@ def prevention_node(state: AgentState) -> AgentState:
         HumanMessage(content=human_content),
     ]
 
+    tracer = get_tracer()
+    callbacks = [tracer] if tracer is not None else []
+
     logger.debug("[prevention_node] memanggil LLM...")
     try:
-        response = model.invoke(messages)
+        response = model.invoke(messages, config={'callbacks': callbacks})
         recommendation = response.content
         logger.success("[prevention_node] OK — rekomendasi berhasil dibuat ({} chars)", len(recommendation))
     except Exception as e:

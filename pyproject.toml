@@ -11,6 +11,7 @@ dependencies = [
     "langgraph>=1.0.10",
     "loguru>=0.7.0",
     "numpy>=2.4.2",
+    "opik>=1.10.31",
     "pandas>=3.0.1",
     "pydantic-settings>=2.13.1",
     "scikit-learn>=1.8.0",

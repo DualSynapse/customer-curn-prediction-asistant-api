@@ -29,6 +29,19 @@ class Settings(BaseSettings):
         description="Primary Gemini model for general LLM task"
     )
 
+    OPIK_API_KEY: str = Field(
+        description="API key for Opik tracing"
+    )
+
+    OPIK_PROJECT_NAME: str = Field(
+        defaulf="Curn-Agent",
+        description="Opik project name"
+    ) 
+
+    OPIK_URL: str = Field(
+        description='Url for opik tracer'
+    )
+
 @lru_cache
 def get_settings()->Settings:
     """Get cached settings instance."""
