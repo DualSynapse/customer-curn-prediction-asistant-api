@@ -1,0 +1,36 @@
+EDA Results
+1. Unstable data
+- Missing or inaccurated data on TotalCharges 
+result
+- total amount of data we have is around 7 thousand, and it's actual with all 20 feature except on TotalCharges, it only count 7032 from 7042 data. 
+- need to observe the data is it because of the 0 value, or it's null value or else. and the result are around 11 data is have an empty string TotalCharges.
+The Action:
+- just drop the data or search with similar case
+
+2. unique data record on multipleLines data
+- No, Yes, No Phone Service
+result 
+- compariring `No phone service` data on multipleLines column with PhoneService column
+1. `No phone service` is equal with `No` records on PhoneService column, it means if the user have not subscribe phone service in multipleLines (No phone service) we can conclude user not subscribe multipleLines and we can include `No phone service` in `No`.
+the conclusion is based on data explodation wich showed that user with `No phone service` records also have `No` records in PhoneService column.
+The Action:
+in pre-processing we should categorize `No phone service` in `No` 
+
+3. Dependents colum corelations
+- total feature in the data set is 21, but the Dependents is have corelation with other columns 
+result
+- Dependents is corelated with Partners and genders, so we need to observe the connection between the column and perfrom feature engineering
+- the locgic is, if user have parter it means user have Dependents, so we should observe the data wich show user with partners but not have dependents(inaccurate data)
+The Action:
+- perfrom feature engineering on Dependents with parntners.
+- look for single women with dependents is it dominance with curn or not => even single women with dependents, does't mean it will have high curn presentage.
+- Grouping data
+1.Single: Partner = No & Dependents = No (Pelanggan lajang tanpa tanggungan).
+2.Couple: Partner = Yes & Dependents = No (Pasangan tanpa tanggungan).
+3.Single Parent: Partner = No & Dependents = Yes (Pelanggan lajang dengan tanggungan).
+4.Family: Partner = Yes & Dependents = Yes (Pasangan dengan tanggungan).
+
+4. Internet service and online security 
+- both column is really connected so if the user have online security should be have internet service.
+- there's no value that indicate user with `no internet service` or `no` on techsupport and deviceprotection have an internetservice subscriptions
+- simplfied techsupport and deviceprotection with `no internet service` to `no`

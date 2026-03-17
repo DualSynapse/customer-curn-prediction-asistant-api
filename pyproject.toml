@@ -10,10 +10,12 @@ dependencies = [
     "langchain-google-genai>=4.2.1",
     "langgraph>=1.0.10",
     "loguru>=0.7.0",
+    "matplotlib>=3.10.8",
     "numpy>=2.4.2",
     "opik>=1.10.31",
     "pandas>=3.0.1",
     "pydantic-settings>=2.13.1",
     "scikit-learn==1.7.2",
+    "seaborn>=0.13.2",
     "xgboost>=3.2.0",
 ]
