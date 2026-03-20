@@ -4,6 +4,7 @@ import joblib
 import pandas as pd
 import numpy as np
 from pathlib import Path
+from loguru import logger
 from src.app.agent.schema import AgentState
 
 # ── Path ke file model pipeline ──────────────────────────────────────────────
@@ -17,11 +18,11 @@ preprocessor = _pipeline.named_steps["prep"]
 
 # ── Urutan kolom HARUS sama persis dengan saat training ──────────────────────
 FEATURE_COLUMNS = [
-    "gender", "SeniorCitizen", "Partner", "Dependents", "tenure",
-    "PhoneService", "MultipleLines", "InternetService", "OnlineSecurity",
-    "OnlineBackup", "DeviceProtection", "TechSupport", "StreamingTV",
-    "StreamingMovies", "Contract", "PaperlessBilling", "PaymentMethod",
-    "MonthlyCharges", "TotalCharges"
+    "gender", "seniorcitizen", "partner", "dependents", "tenure",
+    "phoneservice", "multiplelines", "internetservice", "onlinesecurity",
+    "onlinebackup", "deviceprotection", "techsupport", "streamingtv",
+    "streamingmovies", "contract", "paperlessbilling", "paymentmethod",
+    "monthlycharges", "totalcharges"
 ]
 
 
@@ -35,11 +36,11 @@ def preprocess_node(state: AgentState) -> AgentState:
     """
 
     # ── LANGKAH 1: Ambil data dari state ─────────────────────────────────────
+    logger.info("[preprocess_node] START — memproses fitur customer")
     customer_features = state["customer_features"]
 
-    # Guard: seharusnya tidak sampai sini kalau input_valid = False
-    # tapi sebagai safety check
     if customer_features is None:
+        logger.error("[preprocess_node] FAILED — customer_features is None")
         return {
             **state,
             "processed_features": None,
@@ -47,16 +48,18 @@ def preprocess_node(state: AgentState) -> AgentState:
         }
 
     # ── LANGKAH 2: Ubah dict → DataFrame (1 baris) ───────────────────────────
-    # DataFrame dibutuhkan karena preprocessor (ColumnTransformer) dilatih
-    # dengan DataFrame dan mengenali nama kolom
-    df = pd.DataFrame([customer_features], columns=FEATURE_COLUMNS)
+    # Rename key ke lowercase agar cocok dengan nama kolom saat training
+    customer_features_lower = {k.lower(): v for k, v in customer_features.items()}
+    df = pd.DataFrame([customer_features_lower], columns=FEATURE_COLUMNS)
 
     # ── LANGKAH 3: Transform menggunakan preprocessor yang sudah dilatih ─────
     # preprocessor sudah di-fit saat training, kita hanya .transform() saja
     # (BUKAN .fit_transform() — itu hanya untuk training)
     try:
         processed = preprocessor.transform(df)  # output: numpy array shape (1, n_features)
+        logger.debug("[preprocess_node] transform OK — output shape: {}", processed.shape)
     except Exception as e:
+        logger.error("[preprocess_node] FAILED — transform error: {}", e)
         return {
             **state,
             "processed_features": None,
@@ -64,6 +67,7 @@ def preprocess_node(state: AgentState) -> AgentState:
         }
 
     # ── LANGKAH 4: Simpan ke state ────────────────────────────────────────────
+    logger.success("[preprocess_node] OK — fitur berhasil dipreprocess")
     return {
         **state,
         "processed_features": processed,

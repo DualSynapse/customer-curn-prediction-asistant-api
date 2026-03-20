@@ -1,6 +1,7 @@
 # src/app/agent/nodes/input_nodes.py
 
 import json
+from loguru import logger
 from src.app.agent.schema import AgentState, CustomerFeatures
 
 
@@ -86,13 +87,14 @@ def input_node(state: AgentState) -> AgentState:
     """
 
     raw_input = state["user_message"]
+    logger.info("[input_node] START — memvalidasi input customer")
 
     # ── LANGKAH 1: Parse JSON ─────────────────────────────────────────────────
-    # user_message harus berupa JSON string yang bisa di-parse
     try:
         data: dict = json.loads(raw_input)
+        logger.debug("[input_node] JSON parsed OK")
     except json.JSONDecodeError as e:
-        # Kalau bukan JSON valid, langsung kembalikan error
+        logger.error("[input_node] FAILED — invalid JSON: {}", e)
         return {
             **state,
             "customer_features": None,
@@ -105,6 +107,7 @@ def input_node(state: AgentState) -> AgentState:
         field for field in REQUIRED_FIELDS if field not in data
     ]
     if missing_fields:
+        logger.warning("[input_node] FAILED — missing fields: {}", missing_fields)
         return {
             **state,
             "customer_features": None,
@@ -129,6 +132,7 @@ def input_node(state: AgentState) -> AgentState:
             )
 
     if type_errors:
+        logger.warning("[input_node] FAILED — type errors: {}", type_errors)
         return {
             **state,
             "customer_features": None,
@@ -139,6 +143,7 @@ def input_node(state: AgentState) -> AgentState:
     # ── LANGKAH 4: Validasi nilai (business rules) ────────────────────────────
     value_errors = _validate_values(data)
     if value_errors:
+        logger.warning("[input_node] FAILED — value errors: {}", value_errors)
         return {
             **state,
             "customer_features": None,
@@ -153,6 +158,7 @@ def input_node(state: AgentState) -> AgentState:
         for field, expected_type in REQUIRED_FIELDS.items()
     }
 
+    logger.success("[input_node] OK — input valid, semua field lengkap")
     return {
         **state,
         "customer_features": customer_features,

@@ -1,7 +1,9 @@
+from loguru import logger
 from src.app.models.model import model
 from src.app.agent.schema import AgentState
-from src.app.prompt.template import RETENTTION_SYSTEM_PROMPT
-from langchain_core.messages import SystemMessage, HumanMessage  
+from src.config.tracing import get_tracer
+from src.app.prompt.template import RETENTION_SYSTEM_PROMPT
+from langchain_core.messages import SystemMessage, HumanMessage
 
 _GENDER      = {0: "Female", 1: "Male"}
 _YES_NO      = {0: "No", 1: "Yes"}
@@ -49,25 +51,33 @@ def retention_node(state: AgentState) -> AgentState:
     """
     features = state["customer_features"]
     probability = state.get("churn_probability") or 0.0
+    loyalty_score = 1.0 - probability
+    logger.info("[retention_node] START — membuat strategi retensi (loyalty score: {:.2%})", loyalty_score)
 
-    # ── Bangun HumanMessage dari profil customer ──────────────────────────────
     customer_description = _decode_features(features)
     human_content = (
-        f"Customer Profile (Churn Probability: {probability:.1%}):\n"
+        f"Profil Customer:\n"
         f"{customer_description}\n\n"
+        f"Hasil Prediksi: CHURN RISK = FALSE (Pelanggan Setia)\n"
+        f"Loyalty Score: {loyalty_score:.1%}\n\n"
         "Analisis profil customer di atas dan berikan strategi untuk mempertahankan serta meningkatkan loyalitas mereka."
     )
 
     messages = [
-        SystemMessage(content=RETENTTION_SYSTEM_PROMPT),
+        SystemMessage(content=RETENTION_SYSTEM_PROMPT),
         HumanMessage(content=human_content),
     ]
 
-    # ── Invoke LLM ────────────────────────────────────────────────────────────
+    tracer = get_tracer()
+    callbacks = [tracer] if tracer is not None else []
+
+    logger.debug("[retention_node] memanggil LLM...")
     try:
-        response = model.invoke(messages)
+        response = model.invoke(messages, config={'callbacks': callbacks})
         recommendation = response.content
+        logger.success("[retention_node] OK — strategi retensi berhasil dibuat ({} chars)", len(recommendation))
     except Exception as e:
+        logger.error("[retention_node] FAILED — LLM error: {}", e)
         recommendation = f"Failed to generate recommendation: {str(e)}"
 
     return {

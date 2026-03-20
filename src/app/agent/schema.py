@@ -44,3 +44,6 @@ class AgentState(TypedDict):
 
     # --- Diisi oleh retention/prevention node (nanti) ---
     recommendation: Optional[str]
+
+    # --- Diisi oleh response_node ---
+    final_response: Optional[dict]
