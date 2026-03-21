@@ -34,3 +34,32 @@ The Action:
 - both column is really connected so if the user have online security should be have internet service.
 - there's no value that indicate user with `no internet service` or `no` on techsupport and deviceprotection have an internetservice subscriptions
 - simplfied techsupport and deviceprotection with `no internet service` to `no`
+
+Training Results
+first cycle
+kernel="rbf", 
+    C=0.5, 
+    gamma=0.001, 
+    probability=True, 
+    random_state=42,
+    class_weight=cw_tuned,
+cw_tuned = {0: 1.0, 1: class_weight_svc[1] * 0.5}
+estimator=l1_selector_estimator_v2, threshold="0.5*median"
+Results
+Accuracy : 0.7918
+F1-score : 0.6129
+ROC-AUC  : 0.8283
+
+Classification Report:
+               precision    recall  f1-score   support
+
+           0       0.86      0.85      0.86      1033
+           1       0.61      0.62      0.61       374
+
+    accuracy                           0.79      1407
+   macro avg       0.73      0.74      0.74      1407
+weighted avg       0.79      0.79      0.79      1407
+
+Confusion Matrix:
+ [[882 151]
+ [142 232]]
