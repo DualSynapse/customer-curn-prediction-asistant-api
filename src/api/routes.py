@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from src.app.service import predict_churn
@@ -6,25 +7,23 @@ router = APIRouter()
 
 
 class CustomerRequest(BaseModel):
-    gender: int
-    SeniorCitizen: int
-    Partner: int
-    Dependents: int
+    SeniorCitizen: str
     tenure: int
-    PhoneService: int
-    MultipleLines: int
-    InternetService: int
-    OnlineSecurity: int
-    OnlineBackup: int
-    DeviceProtection: int
-    TechSupport: int
-    StreamingTV: int
-    StreamingMovies: int
-    Contract: int
-    PaperlessBilling: int
-    PaymentMethod: int
+    PhoneService: str
+    MultipleLines: str
+    InternetService: str
+    OnlineSecurity: str
+    OnlineBackup: str
+    DeviceProtection: str
+    TechSupport: str
+    StreamingTV: str
+    StreamingMovies: str
+    Contract: str
+    PaperlessBilling: str
+    PaymentMethod: str
     MonthlyCharges: float
-    TotalCharges: float
+    FamilyStatus: str
+    Churn: Optional[str] = None
 
 
 @router.post("/predict")

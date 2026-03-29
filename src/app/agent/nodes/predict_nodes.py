@@ -3,17 +3,25 @@ from pathlib import Path
 from loguru import logger
 from langgraph.graph import END
 from ..schema import AgentState
+from src.app.models.svc_transformers import register_legacy_pickle_functions
 
-MODEL_PATH = Path(__file__).resolve().parents[2]/ "models" / "xgb_undersampling_pipeline.pkl"
+# 1. Ubah path untuk menunjuk ke model pipeline SVC yang baru
+MODEL_PATH = Path(__file__).resolve().parents[2] / "models" / "svc_pipeline.pkl"
+register_legacy_pickle_functions()
 _pipeline = joblib.load(MODEL_PATH)
+
 _classifier = _pipeline.named_steps["clf"]
 
 def predict_node(state: AgentState) -> AgentState:
+    """
+    Node ini menjalankan prediksi churn menggunakan fitur yang sudah dipreprocess
+    dari preprocess_node agar alur graph tetap modular.
+    """
     logger.info("[predict_node] START — menjalankan prediksi churn")
 
-    preprocesed_features = state["processed_features"]
+    preprocessed_features = state.get("processed_features")
 
-    if preprocesed_features is None:
+    if preprocessed_features is None:
         logger.warning("[predict_node] SKIP — processed_features is None, kemungkinan preprocess gagal")
         return {
             **state,
@@ -22,8 +30,9 @@ def predict_node(state: AgentState) -> AgentState:
         }
     
     try:
-        predict = _classifier.predict(preprocesed_features)[0]
-        probs = _classifier.predict_proba(preprocesed_features)[0]
+        predict = _classifier.predict(preprocessed_features)[0]
+        probs = _classifier.predict_proba(preprocessed_features)[0]
+
     except Exception as e:
         logger.error("[predict_node] FAILED — classifier error: {}", e)
         return {
@@ -34,25 +43,28 @@ def predict_node(state: AgentState) -> AgentState:
         }
 
     label = "CHURN" if int(predict) == 1 else "NO CHURN"
-    logger.success("[predict_node] OK — hasil: {} (probability: {:.2%})", label, float(probs[1]))
+    churn_prob = float(probs[1])
+    logger.success("[predict_node] OK — hasil: {} (probability: {:.2%})", label, churn_prob)
+    
     return {
         **state,
         "prediction": int(predict),
-        "churn_probability": float(probs[1]),
+        "churn_probability": churn_prob,
         "error_message": None
     }
 
 def route_by_prediction(state: AgentState) -> str:
-    """Conditional edge function"""
+    """Conditional edge function untuk routing berdasarkan hasil prediksi."""
 
-    if state['prediction'] is None:
-        logger.warning("[router] prediction is None — graph berhenti (END)")
+    prediction = state.get("prediction")
+
+    if prediction is None:
+        logger.warning("[router] 'prediction' is None — graph berhenti (END)")
         return END
 
-    if state['prediction'] == 1:
+    if prediction == 1:
         logger.info("[router] routing ke → churn_prevention_agent")
         return "churn_prevention_agent"
     else:
         logger.info("[router] routing ke → retention_enhancement_agent")
         return "retention_enhancement_agent"
-    

@@ -3,25 +3,22 @@ import numpy as np
 from numpy.typing import NDArray
 # struktur data customer
 class CustomerFeatures(TypedDict):
-    gender: int             # 0 = Female, 1 = Male
-    SeniorCitizen: int      # 0 = No, 1 = Yes
-    Partner: int            # 0 = No, 1 = Yes
-    Dependents: int         # 0 = No, 1 = Yes
-    tenure: int             # jumlah bulan berlangganan
-    PhoneService: int       # 0 = No, 1 = Yes
-    MultipleLines: int      # 0 = No, 1 = Yes
-    InternetService: int    # 0 = No, 1 = DSL, 2 = Fiber optic
-    OnlineSecurity: int     # 0 = No, 1 = Yes
-    OnlineBackup: int       # 0 = No, 1 = Yes
-    DeviceProtection: int   # 0 = No, 1 = Yes
-    TechSupport: int        # 0 = No, 1 = Yes
-    StreamingTV: int        # 0 = No, 1 = Yes
-    StreamingMovies: int    # 0 = No, 1 = Yes
-    Contract: int           # 0 = Month-to-month, 1 = One year, 2 = Two year
-    PaperlessBilling: int   # 0 = No, 1 = Yes
-    PaymentMethod: int      # 0~3 (berbagai metode pembayaran)
-    MonthlyCharges: float   # tagihan bulanan
-    TotalCharges: float     # total tagihan
+    SeniorCitizen: str       # "0" atau "1"
+    tenure: int              # jumlah bulan berlangganan
+    PhoneService: str        # "Yes" / "No"
+    MultipleLines: str       # "Yes" / "No" / "No phone service"
+    InternetService: str     # "DSL" / "Fiber optic" / "No"
+    OnlineSecurity: str      # "Yes" / "No" / "No internet service"
+    OnlineBackup: str        # "Yes" / "No" / "No internet service"
+    DeviceProtection: str    # "Yes" / "No" / "No internet service"
+    TechSupport: str         # "Yes" / "No" / "No internet service"
+    StreamingTV: str         # "Yes" / "No" / "No internet service"
+    StreamingMovies: str     # "Yes" / "No" / "No internet service"
+    Contract: str            # "Month-to-month" / "One year" / "Two year"
+    PaperlessBilling: str    # "Yes" / "No"
+    PaymentMethod: str       # metode pembayaran kategorikal
+    MonthlyCharges: float    # tagihan bulanan
+    FamilyStatus: str        # "Couple" / "Family" / "Single" / "Single Parent"
 
 # ── 2. State global yang dibawa seluruh graph ──────────────────────────────────
 # Setiap node membaca dan menulis ke sini
