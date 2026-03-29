@@ -2,27 +2,27 @@
 
 import joblib
 import pandas as pd
-import numpy as np
 from pathlib import Path
 from loguru import logger
 from src.app.agent.schema import AgentState
 
 # ── Path ke file model pipeline ──────────────────────────────────────────────
 # Path dihitung dari lokasi file ini agar tidak bergantung pada working directory
-MODEL_PATH = Path(__file__).resolve().parents[2] / "models" / "xgb_undersampling_pipeline.pkl"
+MODEL_PATH = Path(__file__).resolve().parents[2] / "models" / "svc_pipeline.pkl"
+
 # ── Load pipeline satu kali saat module pertama kali di-import ───────────────
 # Tidak perlu load ulang setiap kali node dipanggil (lebih efisien)
 _pipeline = joblib.load(MODEL_PATH)
-preprocessor = _pipeline.named_steps["prep"]
 
+# Pipeline sebelum classifier: prep -> scale -> fs
+_feature_pipeline = _pipeline[:-1]
 
-# ── Urutan kolom HARUS sama persis dengan saat training ──────────────────────
+# Urutan input mentah harus sama dengan data training sebelum preprocessing.
 FEATURE_COLUMNS = [
-    "gender", "seniorcitizen", "partner", "dependents", "tenure",
-    "phoneservice", "multiplelines", "internetservice", "onlinesecurity",
-    "onlinebackup", "deviceprotection", "techsupport", "streamingtv",
-    "streamingmovies", "contract", "paperlessbilling", "paymentmethod",
-    "monthlycharges", "totalcharges"
+    "SeniorCitizen", "Partner", "Dependents", "tenure", "PhoneService",
+    "MultipleLines", "InternetService", "OnlineSecurity", "OnlineBackup",
+    "DeviceProtection", "TechSupport", "StreamingTV", "StreamingMovies",
+    "Contract", "PaperlessBilling", "PaymentMethod", "MonthlyCharges"
 ]
 
 
@@ -30,16 +30,16 @@ def preprocess_node(state: AgentState) -> AgentState:
     """
     Node kedua dalam graph. Tugasnya:
     1. Ambil customer_features dari state
-    2. Ubah dict → DataFrame dengan urutan kolom yang benar
-    3. Jalankan preprocessor (StandardScaler + OneHotEncoder)
+    2. Ubah dict -> DataFrame dengan urutan kolom yang benar
+    3. Jalankan transform fitur (prep + scale + fs)
     4. Simpan hasil array ke processed_features
     """
 
     # ── LANGKAH 1: Ambil data dari state ─────────────────────────────────────
     logger.info("[preprocess_node] START — memproses fitur customer")
-    customer_features = state["customer_features"]
+    customer_features = state.get("customer_features")
 
-    if customer_features is None:
+    if not state.get("input_valid") or customer_features is None:
         logger.error("[preprocess_node] FAILED — customer_features is None")
         return {
             **state,
@@ -48,15 +48,11 @@ def preprocess_node(state: AgentState) -> AgentState:
         }
 
     # ── LANGKAH 2: Ubah dict → DataFrame (1 baris) ───────────────────────────
-    # Rename key ke lowercase agar cocok dengan nama kolom saat training
-    customer_features_lower = {k.lower(): v for k, v in customer_features.items()}
-    df = pd.DataFrame([customer_features_lower], columns=FEATURE_COLUMNS)
+    df = pd.DataFrame([customer_features], columns=FEATURE_COLUMNS)
 
-    # ── LANGKAH 3: Transform menggunakan preprocessor yang sudah dilatih ─────
-    # preprocessor sudah di-fit saat training, kita hanya .transform() saja
-    # (BUKAN .fit_transform() — itu hanya untuk training)
+    # ── LANGKAH 3: Transform menggunakan feature pipeline yang sudah dilatih ──
     try:
-        processed = preprocessor.transform(df)  # output: numpy array shape (1, n_features)
+        processed = _feature_pipeline.transform(df)  # output: numpy array shape (1, n_selected_features)
         logger.debug("[preprocess_node] transform OK — output shape: {}", processed.shape)
     except Exception as e:
         logger.error("[preprocess_node] FAILED — transform error: {}", e)
