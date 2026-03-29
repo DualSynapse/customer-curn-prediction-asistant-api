@@ -4,8 +4,6 @@ from numpy.typing import NDArray
 # struktur data customer
 class CustomerFeatures(TypedDict):
     SeniorCitizen: str       # "0" atau "1"
-    Partner: str             # "Yes" / "No"
-    Dependents: str          # "Yes" / "No"
     tenure: int              # jumlah bulan berlangganan
     PhoneService: str        # "Yes" / "No"
     MultipleLines: str       # "Yes" / "No" / "No phone service"
@@ -20,6 +18,7 @@ class CustomerFeatures(TypedDict):
     PaperlessBilling: str    # "Yes" / "No"
     PaymentMethod: str       # metode pembayaran kategorikal
     MonthlyCharges: float    # tagihan bulanan
+    FamilyStatus: str        # "Couple" / "Family" / "Single" / "Single Parent"
 
 # ── 2. State global yang dibawa seluruh graph ──────────────────────────────────
 # Setiap node membaca dan menulis ke sini

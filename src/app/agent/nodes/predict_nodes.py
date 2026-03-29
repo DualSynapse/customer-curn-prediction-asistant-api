@@ -3,9 +3,11 @@ from pathlib import Path
 from loguru import logger
 from langgraph.graph import END
 from ..schema import AgentState
+from src.app.models.svc_transformers import register_legacy_pickle_functions
 
 # 1. Ubah path untuk menunjuk ke model pipeline SVC yang baru
 MODEL_PATH = Path(__file__).resolve().parents[2] / "models" / "svc_pipeline.pkl"
+register_legacy_pickle_functions()
 _pipeline = joblib.load(MODEL_PATH)
 
 _classifier = _pipeline.named_steps["clf"]

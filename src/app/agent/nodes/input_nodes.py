@@ -11,8 +11,6 @@ from src.app.agent.schema import AgentState, CustomerFeatures
 # Tipe data diubah menjadi string untuk mencerminkan input mentah sebelum preprocessing.
 REQUIRED_FIELDS = {
     "SeniorCitizen": str,
-    "Partner": str,
-    "Dependents": str,
     "tenure": int,
     "PhoneService": str,
     "MultipleLines": str,
@@ -27,6 +25,7 @@ REQUIRED_FIELDS = {
     "PaperlessBilling": str,
     "PaymentMethod": str,
     "MonthlyCharges": float,
+    "FamilyStatus": str,
 }
 
 
@@ -48,9 +47,7 @@ def _validate_values(data: dict) -> list[str]:
         errors.append("MonthlyCharges cannot be negative")
 
     # Validasi untuk field string "Yes" atau "No"
-    string_yes_no_fields = [
-        "Partner", "Dependents", "PhoneService", "PaperlessBilling"
-    ]
+    string_yes_no_fields = ["PhoneService", "PaperlessBilling"]
     for field in string_yes_no_fields:
         if field in data and data[field] not in ("Yes", "No"):
             errors.append(f"'{field}' must be 'Yes' or 'No', got: '{data[field]}'")
@@ -87,6 +84,11 @@ def _validate_values(data: dict) -> list[str]:
     ]
     if "PaymentMethod" in data and data["PaymentMethod"] not in valid_payment_methods:
         errors.append(f"Invalid 'PaymentMethod', got: '{data['PaymentMethod']}'")
+
+    # FamilyStatus: gunakan kategori yang terlihat pada data training
+    valid_family_statuses = ["Couple", "Family", "Single", "Single Parent"]
+    if "FamilyStatus" in data and data["FamilyStatus"] not in valid_family_statuses:
+        errors.append(f"Invalid 'FamilyStatus', got: '{data['FamilyStatus']}'")
 
     return errors
 
