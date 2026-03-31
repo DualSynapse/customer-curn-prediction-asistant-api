@@ -1,4 +1,4 @@
-# Customer Churn Prediction Assistant API
+# Customer Churn Prediction Assistant API 📉🤖
 
 An AI-powered API that predicts customer churn risk and generates actionable retention recommendations.
 
@@ -8,7 +8,7 @@ This project combines:
 - A Gemini-based LLM for personalized churn prevention or loyalty enhancement strategies.
 - A FastAPI interface for production-friendly HTTP access.
 
-## 1. Project Description
+## 1. Project Description 🧭
 
 The system receives structured customer profile data, validates it, preprocesses it using the same transformations used during model training, computes churn probability, and then routes the result to one of two recommendation agents:
 - Churn prevention agent (for high-risk customers).
@@ -45,7 +45,7 @@ flowchart TD
 - Model layer: Loads SVC pipeline and Gemini chat model.
 - Config layer: Environment-based settings and optional Opik tracing.
 
-## 2. Project Structure
+## 2. Project Structure 🗂️
 
 ```text
 customer-curn-prediction-asistant-api/
@@ -84,22 +84,22 @@ customer-curn-prediction-asistant-api/
 				`-- tracing.py               # Opik tracer integration
 ```
 
-## 3. How To Run (Dependencies to API Startup)
+## 3. How To Run (Dependencies to API Startup) 🚀
 
-### Prerequisites
+### Prerequisites ✅
 
 - Python 3.12+
 - A virtual environment tool (recommended)
 - Gemini API key
 
-### Step 1: Clone and Enter Project
+### Step 1: Clone and Enter Project 📥
 
 ```bash
 git clone <your-repository-url>
 cd customer-curn-prediction-asistant-api
 ```
 
-### Step 2: Create and Activate Virtual Environment
+### Step 2: Create and Activate Virtual Environment 🐍
 
 Windows (PowerShell):
 
@@ -115,7 +115,7 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-### Step 3: Install Dependencies
+### Step 3: Install Dependencies 📦
 
 Using `pip`:
 
@@ -129,7 +129,7 @@ Alternative (if you use `uv`):
 uv sync
 ```
 
-### Step 4: Configure Environment Variables
+### Step 4: Configure Environment Variables ⚙️
 
 Create a `.env` file in the project root.
 
@@ -148,7 +148,7 @@ Notes:
 - `OPIK_*` values are optional if tracing is not used in your environment.
 - Keep `.env` out of version control.
 
-### Step 5: Run the API
+### Step 5: Run the API ▶️
 
 Option A (root entrypoint):
 
@@ -162,12 +162,12 @@ Option B (direct uvicorn):
 uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### Step 6: Verify the Service
+### Step 6: Verify the Service 🔎
 
 - Swagger UI: `http://localhost:8000/docs`
 - OpenAPI schema: `http://localhost:8000/openapi.json`
 
-## API Quick Example
+## API Quick Example 🧪
 
 ### Endpoint
 
@@ -222,7 +222,7 @@ curl -X POST "http://localhost:8000/api/v1/predict" \
 	}'
 ```
 
-## Response Format
+## Response Format 📤
 
 ```json
 {
@@ -233,19 +233,19 @@ curl -X POST "http://localhost:8000/api/v1/predict" \
 }
 ```
 
-## Configuration Notes
+## Configuration Notes 📝
 
 - Input validation is strict and enforces required features and controlled categorical values.
 - The preprocessing node reuses the trained pipeline transformations to avoid training-serving skew.
 - Legacy notebook pickles are supported by registering transformer functions before loading `svc_pipeline.pkl`.
 - If recommendation generation fails, the API still returns prediction outputs and a fallback error message.
 
-## Observability
+## Observability 📊
 
 - Tracing is integrated with Opik (when configured).
 - If tracing setup fails, the app logs warnings and continues serving requests.
 
-## Suggested Development Workflow
+## Suggested Development Workflow 🛠️
 
 1. Update notebooks in `notebooks/training` when retraining models.
 2. Export/replace `svc_pipeline.pkl` in `src/app/models`.
@@ -256,6 +256,3 @@ curl -X POST "http://localhost:8000/api/v1/predict" \
 	 - Preprocess feature column order
 4. Run API contract tests for `/api/v1/predict` before deployment.
 
-## License
-
-Add your preferred license information here (for example, MIT, Apache-2.0, or proprietary internal use).
